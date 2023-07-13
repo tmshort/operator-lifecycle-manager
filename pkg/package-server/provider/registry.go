@@ -540,8 +540,14 @@ func newPackageManifest(ctx context.Context, logger *logrus.Entry, pkg *api.Pack
 		defaultElided bool
 		defaultCsv    *operatorsv1alpha1.ClusterServiceVersion
 	)
+
+	pkg, err := client.GetPackage(ctx, &api.GetPackageRequest{Name: pkg.GetName()})
+	if err != nil {
+		return nil, err
+	}
+
 	for _, pkgChannel := range pkgChannels {
-		bundle, err := client.GetBundleForChannel(ctx, &api.GetBundleInChannelRequest{PkgName: pkg.GetName(), ChannelName: pkgChannel.GetName()})
+		bundle, err := client.GetBundle(ctx, &api.GetBundleRequest{PkgName: pkg.GetName(), ChannelName: pkgChannel.GetName()})
 		if err != nil {
 			logger.WithError(err).WithField("channel", pkgChannel.GetName()).Warn("error getting bundle, eliding channel")
 			defaultElided = defaultElided || pkgChannel.Name == manifest.Status.DefaultChannel
